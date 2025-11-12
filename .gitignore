@@ -2,3 +2,4 @@ wellu-architect
 Analisis Crítico y Reestructuración de la Arquitectura Actual Middleware.pdf
 node_modules
 .env
+.venv
