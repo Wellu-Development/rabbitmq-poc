@@ -1,4 +1,4 @@
-require("dotenv").config({ path: "../.env" });
+require("dotenv").config({ path: "../../.env" });
 const amqp = require("amqplib");
 
 // Configuration for the RabbitMQ connection
