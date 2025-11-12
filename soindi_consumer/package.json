@@ -1,0 +1,12 @@
+{
+  "name": "soindi-consumer",
+  "version": "1.0.0",
+  "description": "SOINDI consumer simulator",
+  "main": "consumer.js",
+  "scripts": {
+    "start": "node consumer.js"
+  },
+  "dependencies": {
+    "amqplib": "^0.10.3"
+  }
+}
