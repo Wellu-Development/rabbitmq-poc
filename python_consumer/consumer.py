@@ -2,6 +2,14 @@ import pika
 import json
 import sys
 import time
+import os
+from dotenv import load_dotenv
+
+    # Load environment variables from .env file
+load_dotenv()
+
+QUEUE_NAME = os.getenv('QUEUE_NAME')
+
 
 def main():
     # Connect to RabbitMQ
@@ -11,7 +19,8 @@ def main():
     channel = connection.channel()
 
     # Declare the queue to ensure it exists
-    queue_name = 'python_queue'
+    # queue_name = 'python_queue'
+    queue_name = QUEUE_NAME
     channel.queue_declare(queue=queue_name, durable=True)
 
     print(' [*] Waiting for messages. To exit press CTRL+C')
