@@ -1,128 +1,109 @@
-# RabbitMQ Producer-Consumer POC: Odoo to SOINDI Integration
+# POC de RabbitMQ: Taller de Productores y Consumidores
 
-This Proof of Concept (POC) demonstrates how to use RabbitMQ as a message broker to decouple a new system (Odoo) from a legacy system (SOINDI). It follows a simple **Producer-Consumer** pattern.
+Este proyecto es una Prueba de Concepto (POC) diseñada para una demostración con el equipo. Demuestra cómo los sistemas desacoplados pueden comunicarse de manera agnóstica al lenguaje utilizando RabbitMQ como un intermediario de mensajes (message broker).
 
--   **Node.js Producer (`odoo_producer/`)**: A Node.js script that simulates the Odoo system publishing an event (e.g., "Product Updated") to a RabbitMQ queue.
--   **Node.js Consumer (`soindi_consumer/`)**: A Node.js script that simulates the SOINDI legacy system listening for events from the queue and processing them (e.g., to keep its own data in sync).
+El taller incluye ejemplos de **Productores** (quienes envían mensajes) y **Consumidores** (quienes reciben mensajes) implementados tanto en **Node.js** como en **Python**.
 
-## Additional Python Examples
+## Estructura del Proyecto
 
-For demonstration purposes, two more producer-consumer pairs have been added, implemented in Python. These demonstrate the language-agnostic nature of RabbitMQ.
+El código ha sido refactorizado en dos directorios principales para mayor claridad:
 
--   **Python Producer 1 (`python_producer_1/`)**: Sends a message to `python_queue_1`.
--   **Python Consumer 1 (`python_consumer_1/`)**: Consumes messages from `python_queue_1`.
--   **Python Producer 2 (`python_producer_2/`)**: Sends a message to `python_queue_2`.
--   **Python Consumer 2 (`python_consumer_2/`)**: Consumes messages from `python_queue_2`.
+- `js/`: Contiene los ejemplos de productor y consumidor en JavaScript (Node.js).
+- `python/`: Contiene los ejemplos de productor y consumidor en Python.
 
-## The Power of Decoupling
+Todos los ejemplos están configurados para usar una única cola de RabbitMQ definida en el archivo `.env`, lo que demuestra la interoperabilidad entre diferentes lenguajes.
 
-This architecture brings to light the critical advantage of decoupling:
+## El Poder del Desacoplamiento
 
-**Odoo (the producer) does not need to know anything about SOINDI (the consumer).**
+La arquitectura de colas de mensajes es fundamental para construir sistemas resilientes y escalables.
 
--   **No Direct Connection**: Odoo's only job is to send a message to a specific RabbitMQ queue. It has no awareness of which system will pick it up, where that system is, or even if it's currently online. This is crucial for allowing the legacy system to process data on its own terms without slowing down the modern system.
--   **Resilience**: If the SOINDI consumer is offline for maintenance or due to a crash, the messages from Odoo will safely persist in the RabbitMQ queue. Once SOINDI comes back online, it can immediately start processing the backlog of messages. The systems don't have to be available at the same time.
--   **Scalability**: If the volume of events from Odoo increases, we can potentially scale the processing power by running multiple instances of the SOINDI consumer (if the legacy system supports it).
--   **Flexibility**: If a new system (e.g., a data warehouse) needs to be notified of the same "Product Updated" event, we can add another consumer to listen to the same messages without making any changes to Odoo.
+- **Agnóstico al Lenguaje**: Como demuestra este taller, un productor en Python puede enviar un mensaje que es consumido por un servicio en Node.js, y viceversa. Los sistemas no necesitan saber en qué tecnología están construidos los demás.
+- **Resiliencia**: Si un consumidor se cae o está en mantenimiento, los mensajes del productor se acumulan de forma segura en la cola de RabbitMQ. Una vez que el consumidor vuelve a estar en línea, puede procesar los mensajes pendientes sin que se pierda información.
+- **Escalabilidad**: Si un productor envía más mensajes de los que un solo consumidor puede procesar, se pueden levantar múltiples instancias del consumidor. RabbitMQ distribuirá la carga de mensajes entre todas las instancias activas.
+- **Flexibilidad**: Se pueden agregar nuevos consumidores a una cola existente para realizar nuevas tareas (como análisis de datos, auditoría, etc.) sin tener que modificar el productor original.
 
-This message queue acts as a "glue" or middleware that allows two independent systems to communicate asynchronously and reliably.
+## Cómo Ejecutar la Demostración
 
-## How to Run the POC
+### Prerrequisitos
 
-### Prerequisites
+- Docker y Docker Compose
+- Node.js y npm
+- Python 3 y pip
 
--   Docker and Docker Compose
--   Node.js and npm
--   Python 3 and pip
+### 1. Iniciar el Servidor de RabbitMQ
 
-### 1. Start RabbitMQ Server
-
-Open a terminal and run the following command from the root of the project:
+Este es el primer y más importante paso. En la raíz del proyecto, ejecuta:
 
 ```bash
 docker-compose up -d
 ```
 
-This will start a RabbitMQ container in the background.
+Esto iniciará un contenedor de RabbitMQ en segundo plano.
 
--   You can access the RabbitMQ Management UI at [http://localhost:15672](http://localhost:15672).
--   Use the credentials `user` / `password` to log in.
+- **Interfaz de Administración**: Puedes monitorear las colas y los mensajes en [http://localhost:15672](http://localhost:15672).
+- **Credenciales**: `user` / `password`.
 
-### 2. Run the Node.js Consumer (SOINDI)
+### 2. Ejecutar los Ejemplos de Node.js
 
-Open a **new terminal** and navigate to the `soindi_consumer` directory. Install dependencies and start the listener:
+Necesitarás dos terminales.
+
+**Terminal 1: Consumidor (Node.js)**
+Este script se conectará a RabbitMQ y esperará mensajes.
 
 ```bash
-cd soindi_consumer
+cd js/consumer
 npm install
 npm start
 ```
 
-The consumer will connect to RabbitMQ and wait for messages on the `odoo_events` queue.
-
-### 3. Run the Node.js Producer (Odoo)
-
-Open a **third terminal** and navigate to the `odoo_producer` directory. Install dependencies and run the script to send a message:
+**Terminal 2: Productor (Node.js)**
+Este script enviará un único mensaje a la cola y terminará.
 
 ```bash
-cd odoo_producer
+cd js/producer
 npm install
 npm start
 ```
 
-### 4. Run the Python Examples
+Verás en la terminal del consumidor que el mensaje enviado desde el productor ha sido recibido y procesado.
 
-For each Python producer/consumer pair, you'll need two separate terminals.
+### 3. Ejecutar los Ejemplos de Python
 
-**For Python Producer 1 and Consumer 1:**
+También necesitarás dos terminales para los ejemplos de Python. Se recomienda usar entornos virtuales.
 
-**Consumer 1:**
-Open a new terminal:
+**Terminal 3: Consumidor (Python)**
+Este script se conectará y esperará mensajes en la misma cola.
+
 ```bash
-cd python_consumer_1
+cd python/consumer
+# Opcional: crear y activar un entorno virtual
 python3 -m venv venv
 source venv/bin/activate
+# Instalar dependencias
 pip install -r requirements.txt
+# Ejecutar el consumidor
 python3 consumer.py
 ```
 
-**Producer 1:**
-Open another new terminal:
+**Terminal 4: Productor (Python)**
+Este script enviará un mensaje a la cola.
+
 ```bash
-cd python_producer_1
+cd python/producer
+# Opcional: crear y activar un entorno virtual
 python3 -m venv venv
 source venv/bin/activate
+# Instalar dependencias
 pip install -r requirements.txt
+# Ejecutar el productor
 python3 producer.py
 ```
 
-**For Python Producer 2 and Consumer 2:**
+### Probando la Interoperabilidad
 
-**Consumer 2:**
-Open a new terminal:
-```bash
-cd python_consumer_2
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-python3 consumer.py
-```
+Puedes mezclar los productores y consumidores:
 
-**Producer 2:**
-Open another new terminal:
-```bash
-cd python_producer_2
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-python3 producer.py
-```
+- Ejecuta el **productor de Python** y observa cómo el **consumidor de Node.js** recibe el mensaje.
+- Ejecuta el **productor de Node.js** y observa cómo el **consumidor de Python** recibe el mensaje.
 
-### Expected Outcome
-
-1.  The **Odoo producer terminal** will show a confirmation that it connected and sent a message.
-2.  The **SOINDI consumer terminal** will show that it received the message and is "processing" it.
-3.  Similarly, each Python producer will send a message, and its corresponding Python consumer will receive and print it.
-4.  If you check the RabbitMQ Management UI, you will see the `odoo_events`, `python_queue_1`, and `python_queue_2` queues and can observe the message flow.
-
-This completes the demonstration of a decoupled workflow using RabbitMQ with examples in both Node.js and Python.
+Esto demuestra que ambos sistemas se comunican a través de la cola de RabbitMQ sin necesidad de conocer los detalles de implementación del otro.
