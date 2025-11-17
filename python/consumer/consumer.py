@@ -21,24 +21,24 @@ def main():
         pika.ConnectionParameters(host='localhost', credentials=credentials))
     channel = connection.channel()
 
-    # Declare the queue to ensure it exists
-    # queue_name = 'python_queue'
-    queue_name = QUEUE_NAME
-    channel.queue_declare(queue=queue_name, durable=True)
+    # Declare the stream to ensure it exists
+    stream_name = 'inventory_updates'
+    channel.queue_declare(queue=stream_name, durable=True, arguments={'x-queue-type': 'stream'})
 
-    print(' [*] Waiting for messages in \"%s\". To exit press CTRL+C' % QUEUE_NAME)
+    offset = sys.argv[1] if len(sys.argv) > 1 else 'next'
+
+    print(f" [*] Waiting for messages in stream '{stream_name}' with offset '{offset}'. To exit press CTRL+C")
 
     def callback(ch, method, properties, body):
-        print(f" [x] Received {json.loads(body)}")
-        # Simulate work
-        time.sleep(1)
-        print(" [x] Done")
-        # Acknowledge the message
-        ch.basic_ack(delivery_tag=method.delivery_tag)
+        print(f" [x] Received {body.decode()}")
 
-    # Set up subscription on the queue
-    channel.basic_qos(prefetch_count=1)
-    channel.basic_consume(queue=queue_name, on_message_callback=callback)
+    # Set up subscription on the stream
+    channel.basic_consume(
+        queue=stream_name,
+        on_message_callback=callback,
+        auto_ack=True,
+        arguments={'x-stream-offset': offset}
+    )
 
     # Start consuming
     channel.start_consuming()

@@ -14,6 +14,8 @@ QUEUE_NAME = os.getenv('QUEUE_NAME')
 RABBITMQ_USER = os.getenv('RABBITMQ_DEFAULT_USER', 'user')
 RABBITMQ_PASS = os.getenv('RABBITMQ_DEFAULT_PASS', 'password')
 
+import random
+
 def main():
     # Connect to RabbitMQ
     credentials = pika.PlainCredentials(RABBITMQ_USER, RABBITMQ_PASS)
@@ -21,28 +23,27 @@ def main():
         pika.ConnectionParameters(host='localhost', credentials=credentials))
     channel = connection.channel()
 
-    # Declare a durable queue
-    # queue_name = 'python_queue'
-    queue_name = QUEUE_NAME
-    channel.queue_declare(queue=queue_name, durable=True)
+    # Declare a stream
+    stream_name = 'inventory_updates'
+    channel.queue_declare(queue=stream_name, durable=True, arguments={'x-queue-type': 'stream'})
 
-    # Create a message
-    message = {
-        'source': 'Python Producer',
-        'payload': " ".join(sys.argv[1::]) or 'This is the the Python message.'
-    }
-    body = json.dumps(message)
+    # Publish a large number of messages
+    num_messages = 100000
+    print(f" [🚀] Sending {num_messages} messages...")
 
-    # Publish the message
-    channel.basic_publish(
-        exchange='',
-        routing_key=queue_name,
-        body=body,
-        properties=pika.BasicProperties(
-            delivery_mode=2,  # make message persistent
-        ))
+    for i in range(num_messages):
+        sku = f"SKU-{random.randint(1, 1000)}"
+        change = random.randint(-10, 10)
+        sign = '+' if change >= 0 else ''
+        message = f"{sku}, {sign}{change}"
+        body = message
 
-    print(f" [🚀] Sent {message}")
+        channel.basic_publish(
+            exchange='',
+            routing_key=stream_name,
+            body=body)
+
+    print(f" [🚀] Sent {num_messages} messages to stream '{stream_name}'")
 
     # Close the connection
     connection.close()
