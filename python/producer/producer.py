@@ -1,3 +1,4 @@
+from multiprocessing import process
 import queue
 import pika
 import json
@@ -28,7 +29,7 @@ def main():
     # Create a message
     message = {
         'source': 'Python Producer',
-        'payload': 'This is the the Python message.'
+        'payload': " ".join(sys.argv[1::]) or 'This is the the Python message.'
     }
     body = json.dumps(message)
 
