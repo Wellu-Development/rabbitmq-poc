@@ -11,9 +11,12 @@ load_dotenv()
 QUEUE_NAME = os.getenv('QUEUE_NAME')
 
 
+RABBITMQ_USER = os.getenv('RABBITMQ_DEFAULT_USER', 'user')
+RABBITMQ_PASS = os.getenv('RABBITMQ_DEFAULT_PASS', 'password')
+
 def main():
     # Connect to RabbitMQ
-    credentials = pika.PlainCredentials('user', 'password')
+    credentials = pika.PlainCredentials(RABBITMQ_USER, RABBITMQ_PASS)
     connection = pika.BlockingConnection(
         pika.ConnectionParameters(host='localhost', credentials=credentials))
     channel = connection.channel()
@@ -23,7 +26,7 @@ def main():
     queue_name = QUEUE_NAME
     channel.queue_declare(queue=queue_name, durable=True)
 
-    print(' [*] Waiting for messages. To exit press CTRL+C')
+    print(' [*] Waiting for messages in \"%s\". To exit press CTRL+C' % QUEUE_NAME)
 
     def callback(ch, method, properties, body):
         print(f" [x] Received {json.loads(body)}")

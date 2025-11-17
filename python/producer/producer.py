@@ -10,9 +10,12 @@ load_dotenv()
 
 QUEUE_NAME = os.getenv('QUEUE_NAME')
 
+RABBITMQ_USER = os.getenv('RABBITMQ_DEFAULT_USER', 'user')
+RABBITMQ_PASS = os.getenv('RABBITMQ_DEFAULT_PASS', 'password')
+
 def main():
     # Connect to RabbitMQ
-    credentials = pika.PlainCredentials('user', 'password')
+    credentials = pika.PlainCredentials(RABBITMQ_USER, RABBITMQ_PASS)
     connection = pika.BlockingConnection(
         pika.ConnectionParameters(host='localhost', credentials=credentials))
     channel = connection.channel()
