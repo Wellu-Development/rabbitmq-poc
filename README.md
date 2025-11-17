@@ -64,6 +64,34 @@ Diseñadas para escenarios de alto rendimiento que manejan flujos masivos de eve
   channel.queue_declare(queue='stream_queue', durable=True, arguments={'x-queue-type': 'stream'})
   ```
 
+## Tipos de Exchanges en RabbitMQ
+
+Un exchange es el responsable de recibir los mensajes de los productores y enrutarlos a las colas correctas. El tipo de exchange determina cómo se realiza este enrutamiento.
+
+### 1. Exchange Directo (Direct)
+
+Enruta los mensajes a las colas cuyo **binding key** coincide exactamente con la **routing key** del mensaje. Es ideal para enrutamiento unicast (un solo destino).
+
+- **Caso de uso**: Enviar una tarea específica a un worker concreto.
+
+### 2. Exchange de Abanico (Fanout)
+
+Ignora la routing key y envía una copia de cada mensaje a **todas** las colas que están vinculadas a él.
+
+- **Caso de uso**: Distribuir notificaciones o actualizaciones de estado a múltiples servicios.
+
+### 3. Exchange de Temas (Topic)
+
+Enruta los mensajes a las colas basándose en una coincidencia de patrones entre la routing key y el patrón de binding. Se usan comodines como `*` (coincide con una palabra) y `#` (coincide con cero o más palabras).
+
+- **Caso de uso**: Enviar logs con diferentes niveles de severidad (`error`, `info`, `warning`) a distintos consumidores. Por ejemplo, un patrón `logs.*` recibiría todos los logs, mientras que `logs.error` solo recibiría los de error.
+
+### 4. Exchange de Cabeceras (Headers)
+
+Utiliza los atributos de las cabeceras (headers) del mensaje para el enrutamiento, en lugar de la routing key. Permite crear reglas de enrutamiento más complejas.
+
+- **Caso de uso**: Enrutar mensajes basándose en metadatos como el tipo de contenido o el origen del mensaje.
+
 ## Cómo Ejecutar la Demostración
 
 ### Prerrequisitos
