@@ -99,6 +99,7 @@ A continuación, se presentan ejercicios prácticos basados en los tutoriales of
 ### 1. "Hello World": Tu Primer Mensaje
 
 Este ejercicio es la introducción más simple a RabbitMQ. Aprenderás a:
+
 - Enviar un único mensaje a una cola.
 - Recibir ese mensaje en un consumidor.
 
@@ -109,6 +110,7 @@ Es el punto de partida para entender la dinámica básica de productor-consumido
 ### 2. Colas de Trabajo (Work Queues)
 
 Este ejercicio demuestra cómo distribuir tareas que consumen tiempo entre múltiples consumidores. Aprenderás a:
+
 - Enviar tareas a una única cola.
 - Hacer que varios consumidores compartan la carga de trabajo de esa cola.
 - Asegurar que los mensajes sean confirmados (acknowledged) después de ser procesados.
@@ -172,7 +174,7 @@ Verás en la terminal del consumidor que el mensaje enviado desde el productor h
 
 ### 3. Ejecutar los Ejemplos de Python
 
-También necesitarás dos terminales para los ejemplos de Python.
+Primero, asegurate de copiar el archivo `.env.example` a `.env` y reemplazar los valores que hagan falta. También necesitarás dos terminales para los ejemplos de Python.
 
 **Terminal 3: Consumidor (Python)**
 Este script se conectará y esperará mensajes en la misma cola.

@@ -1,10 +1,9 @@
-version: '3.8'
 services:
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
     ports:
-      - "5672:5672"   # AMQP port for application connection
+      - "5672:5672" # AMQP port for application connection
       - "15672:15672" # Port for the management UI
     environment:
       # Default user/pass for simplicity in this POC.
