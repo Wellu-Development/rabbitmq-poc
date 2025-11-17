@@ -133,7 +133,7 @@ En este ejercicio, aprenderás a enviar un mensaje a múltiples consumidores a l
 
 - Docker y Docker Compose
 - Node.js y npm
-- Python 3 y uv
+- Python 3 y [uv](https://docs.astral.sh/uv/#installation)
 
 ### 1. Iniciar el Servidor de RabbitMQ
 
