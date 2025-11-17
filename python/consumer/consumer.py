@@ -24,6 +24,8 @@ def main():
     # Declare the stream to ensure it exists
     stream_name = 'inventory_updates'
     channel.queue_declare(queue=stream_name, durable=True, arguments={'x-queue-type': 'stream'})
+    
+    channel.basic_qos(prefetch_count=1) 
 
     offset = sys.argv[1] if len(sys.argv) > 1 else 'next'
 
@@ -36,7 +38,7 @@ def main():
     channel.basic_consume(
         queue=stream_name,
         on_message_callback=callback,
-        auto_ack=True,
+        auto_ack=False,
         arguments={'x-stream-offset': offset}
     )
 
