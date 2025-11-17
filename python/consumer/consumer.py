@@ -21,24 +21,24 @@ def main():
         pika.ConnectionParameters(host='localhost', credentials=credentials))
     channel = connection.channel()
 
-    # Declare the queue to ensure it exists
-    # queue_name = 'python_queue'
-    queue_name = QUEUE_NAME
-    channel.queue_declare(queue=queue_name, durable=True)
+    # Declare a fanout exchange
+    exchange_name = 'logs'
+    channel.exchange_declare(exchange=exchange_name, exchange_type='fanout')
 
-    print(' [*] Waiting for messages in \"%s\". To exit press CTRL+C' % QUEUE_NAME)
+    # Declare a non-durable, exclusive queue with a random name
+    result = channel.queue_declare(queue='', exclusive=True)
+    queue_name = result.method.queue
+
+    # Bind the queue to the exchange
+    channel.queue_bind(exchange=exchange_name, queue=queue_name)
+
+    print(f" [*] Waiting for logs in '{queue_name}'. To exit press CTRL+C")
 
     def callback(ch, method, properties, body):
-        print(f" [x] Received {json.loads(body)}")
-        # Simulate work
-        time.sleep(1)
-        print(" [x] Done")
-        # Acknowledge the message
-        ch.basic_ack(delivery_tag=method.delivery_tag)
+        print(f" [x] {body.decode()}")
 
     # Set up subscription on the queue
-    channel.basic_qos(prefetch_count=1)
-    channel.basic_consume(queue=queue_name, on_message_callback=callback)
+    channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=True)
 
     # Start consuming
     channel.start_consuming()

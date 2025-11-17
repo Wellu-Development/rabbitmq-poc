@@ -21,28 +21,21 @@ def main():
         pika.ConnectionParameters(host='localhost', credentials=credentials))
     channel = connection.channel()
 
-    # Declare a durable queue
-    # queue_name = 'python_queue'
-    queue_name = QUEUE_NAME
-    channel.queue_declare(queue=queue_name, durable=True)
+    # Declare a fanout exchange
+    exchange_name = 'logs'
+    channel.exchange_declare(exchange=exchange_name, exchange_type='fanout')
 
     # Create a message
-    message = {
-        'source': 'Python Producer',
-        'payload': " ".join(sys.argv[1::]) or 'This is the the Python message.'
-    }
-    body = json.dumps(message)
+    message = ' '.join(sys.argv[1:]) or "info: Hello World!"
+    body = message
 
-    # Publish the message
+    # Publish the message to the exchange
     channel.basic_publish(
-        exchange='',
-        routing_key=queue_name,
-        body=body,
-        properties=pika.BasicProperties(
-            delivery_mode=2,  # make message persistent
-        ))
+        exchange=exchange_name,
+        routing_key='',
+        body=body)
 
-    print(f" [🚀] Sent {message}")
+    print(f" [🚀] Sent '{message}'")
 
     # Close the connection
     connection.close()
