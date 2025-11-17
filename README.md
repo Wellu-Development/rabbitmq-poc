@@ -22,13 +22,55 @@ La arquitectura de colas de mensajes es fundamental para construir sistemas resi
 - **Escalabilidad**: Si un productor envía más mensajes de los que un solo consumidor puede procesar, se pueden levantar múltiples instancias del consumidor. RabbitMQ distribuirá la carga de mensajes entre todas las instancias activas.
 - **Flexibilidad**: Se pueden agregar nuevos consumidores a una cola existente para realizar nuevas tareas (como análisis de datos, auditoría, etc.) sin tener que modificar el productor original.
 
+## Tipos de Colas en RabbitMQ
+
+RabbitMQ ofrece diferentes tipos de colas, cada una con características específicas para distintas necesidades.
+
+### 1. Colas Clásicas (Classic Queues)
+
+Son las colas tradicionales y el tipo por defecto. Ofrecen un modelo FIFO (First-In-First-Out) y son ideales para una amplia variedad de casos de uso.
+
+- **Beneficios**:
+  - **Alto Rendimiento**: Optimizadas para un alto volumen de mensajes y baja latencia.
+  - **Flexibilidad**: Soportan funcionalidades como mensajes persistentes, TTL (Time-To-Live) y límites de longitud.
+- **Ejemplo de declaración (Python con Pika)**:
+  ```python
+  channel.queue_declare(queue='classic_queue', durable=True)
+  ```
+
+### 2. Colas de Quórum (Quorum Queues)
+
+Son una implementación moderna enfocada en la alta disponibilidad y la seguridad de los datos. Utilizan el algoritmo de consenso Raft para replicar los mensajes a través de múltiples nodos del clúster.
+
+- **Beneficios**:
+  - **Alta Disponibilidad**: Garantizan que la cola permanezca operativa incluso si algunos nodos fallan.
+  - **Seguridad de Datos**: Los mensajes se replican, lo que reduce significativamente el riesgo de pérdida de datos.
+  - **Manejo de Mensajes "Envenenados"**: Tienen mecanismos para gestionar mensajes que causan fallos repetidos en los consumidores.
+- **Ejemplo de declaración (Python con Pika)**:
+  ```python
+  channel.queue_declare(queue='quorum_queue', durable=True, arguments={'x-queue-type': 'quorum'})
+  ```
+
+### 3. Colas de Flujo (Stream Queues)
+
+Diseñadas para escenarios de alto rendimiento que manejan flujos masivos de eventos, como telemetría o logs. Actúan como un log de solo anexo (append-only).
+
+- **Beneficios**:
+  - **Rendimiento Extremo**: Optimizadas para procesar millones de mensajes por segundo.
+  - **Replay de Mensajes**: Los consumidores pueden leer y releer mensajes desde cualquier punto del flujo, similar a Apache Kafka.
+  - **Eficiencia de Recursos**: Utilizan el disco de manera eficiente, lo que reduce la presión sobre la memoria.
+- **Ejemplo de declaración (Python con Pika)**:
+  ```python
+  channel.queue_declare(queue='stream_queue', durable=True, arguments={'x-queue-type': 'stream'})
+  ```
+
 ## Cómo Ejecutar la Demostración
 
 ### Prerrequisitos
 
 - Docker y Docker Compose
 - Node.js y npm
-- Python 3 y pip
+- Python 3 y uv
 
 ### 1. Iniciar el Servidor de RabbitMQ
 
@@ -69,20 +111,20 @@ Verás en la terminal del consumidor que el mensaje enviado desde el productor h
 
 ### 3. Ejecutar los Ejemplos de Python
 
-También necesitarás dos terminales para los ejemplos de Python. Se recomienda usar entornos virtuales.
+También necesitarás dos terminales para los ejemplos de Python.
 
 **Terminal 3: Consumidor (Python)**
 Este script se conectará y esperará mensajes en la misma cola.
 
 ```bash
 cd python/consumer
-# Opcional: crear y activar un entorno virtual
-python3 -m venv venv
-source venv/bin/activate
+# Crear entorno virtual y activar
+uv venv
+source .venv/bin/activate
 # Instalar dependencias
-pip install -r requirements.txt
+uv sync
 # Ejecutar el consumidor
-python3 consumer.py
+python consumer.py
 ```
 
 **Terminal 4: Productor (Python)**
@@ -90,13 +132,13 @@ Este script enviará un mensaje a la cola.
 
 ```bash
 cd python/producer
-# Opcional: crear y activar un entorno virtual
-python3 -m venv venv
-source venv/bin/activate
+# Crear entorno virtual y activar
+uv venv
+source .venv/bin/activate
 # Instalar dependencias
-pip install -r requirements.txt
+uv sync
 # Ejecutar el productor
-python3 producer.py
+python producer.py
 ```
 
 ### Probando la Interoperabilidad
