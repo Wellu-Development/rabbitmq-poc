@@ -26,7 +26,7 @@ def main():
     channel.queue_declare(queue=queue_name, durable=True)
 
     # Create a message
-    message = ' '.join(sys.argv[1:]) or "Hello World!"
+    message = ' '.join(sys.argv[1::]) or "Hello World!"
     body = message
 
     # Publish the message
