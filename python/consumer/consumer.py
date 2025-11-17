@@ -22,23 +22,16 @@ def main():
     channel = connection.channel()
 
     # Declare the queue to ensure it exists
-    # queue_name = 'python_queue'
-    queue_name = QUEUE_NAME
-    channel.queue_declare(queue=queue_name, durable=True)
+    queue_name = 'hello'
+    channel.queue_declare(queue=queue_name)
 
-    print(' [*] Waiting for messages in \"%s\". To exit press CTRL+C' % QUEUE_NAME)
+    print(f" [*] Waiting for messages in '{queue_name}'. To exit press CTRL+C")
 
     def callback(ch, method, properties, body):
-        print(f" [x] Received {json.loads(body)}")
-        # Simulate work
-        time.sleep(1)
-        print(" [x] Done")
-        # Acknowledge the message
-        ch.basic_ack(delivery_tag=method.delivery_tag)
+        print(f" [x] Received {body.decode()}")
 
     # Set up subscription on the queue
-    channel.basic_qos(prefetch_count=1)
-    channel.basic_consume(queue=queue_name, on_message_callback=callback)
+    channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=True)
 
     # Start consuming
     channel.start_consuming()
