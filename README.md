@@ -127,6 +127,19 @@ En este ejercicio, aprenderás a enviar un mensaje a múltiples consumidores a l
 
 [Ver tutorial oficial](https://www.rabbitmq.com/tutorials/tutorial-three-python)
 
+### 4. Streams para Actualizaciones Masivas de Inventario
+
+Este ejercicio avanzado demuestra el poder de las **RabbitMQ Streams** para escenarios de alta ingesta de datos, como la actualización masiva de inventario en un e-commerce.
+
+A diferencia de las colas tradicionales, los streams son logs de mensajes de solo anexo (append-only), optimizados para un rendimiento extremo y la capacidad de "reproducir" mensajes.
+
+- **Productor**: Simulará un sistema que genera miles de actualizaciones de inventario (ej. "SKU-123, +10", "SKU-456, -5") y las envía a un stream llamado `inventory_updates`.
+- **Consumidores**:
+    - Un consumidor (ej. un servicio de base de datos) leerá el stream desde el principio para aplicar las actualizaciones.
+    - Otro consumidor (ej. un servicio de analítica) podrá conectarse más tarde y leer el mismo stream desde un punto específico en el tiempo (offset) para analizar los movimientos de inventario sin afectar al primer consumidor.
+
+Este patrón es ideal para sistemas de event sourcing, telemetría o cualquier caso de uso que requiera procesar un gran volumen de eventos de forma resiliente y en tiempo real.
+
 ## Cómo Ejecutar la Demostración
 
 ### Prerrequisitos
