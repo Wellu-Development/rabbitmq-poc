@@ -26,7 +26,7 @@ def main():
     channel.exchange_declare(exchange=exchange_name, exchange_type='fanout')
 
     # Create a message
-    message = ' '.join(sys.argv[1:]) or "info: Hello World!"
+    message = ' '.join(sys.argv[1::]) or "info: Hello World!"
     body = message
 
     # Publish the message to the exchange
