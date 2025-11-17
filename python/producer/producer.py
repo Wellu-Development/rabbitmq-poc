@@ -22,16 +22,12 @@ def main():
     channel = connection.channel()
 
     # Declare a durable queue
-    # queue_name = 'python_queue'
-    queue_name = QUEUE_NAME
+    queue_name = 'task_queue'
     channel.queue_declare(queue=queue_name, durable=True)
 
     # Create a message
-    message = {
-        'source': 'Python Producer',
-        'payload': " ".join(sys.argv[1::]) or 'This is the the Python message.'
-    }
-    body = json.dumps(message)
+    message = ' '.join(sys.argv[1:]) or "Hello World!"
+    body = message
 
     # Publish the message
     channel.basic_publish(
@@ -42,7 +38,7 @@ def main():
             delivery_mode=2,  # make message persistent
         ))
 
-    print(f" [🚀] Sent {message}")
+    print(f" [🚀] Sent '{message}'")
 
     # Close the connection
     connection.close()

@@ -22,16 +22,15 @@ def main():
     channel = connection.channel()
 
     # Declare the queue to ensure it exists
-    # queue_name = 'python_queue'
-    queue_name = QUEUE_NAME
+    queue_name = 'task_queue'
     channel.queue_declare(queue=queue_name, durable=True)
 
-    print(' [*] Waiting for messages in \"%s\". To exit press CTRL+C' % QUEUE_NAME)
+    print(f" [*] Waiting for messages in '{queue_name}'. To exit press CTRL+C")
 
     def callback(ch, method, properties, body):
-        print(f" [x] Received {json.loads(body)}")
+        print(f" [x] Received {body.decode()}")
         # Simulate work
-        time.sleep(1)
+        time.sleep(body.count(b'.'))
         print(" [x] Done")
         # Acknowledge the message
         ch.basic_ack(delivery_tag=method.delivery_tag)
