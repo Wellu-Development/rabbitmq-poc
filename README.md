@@ -92,6 +92,39 @@ Utiliza los atributos de las cabeceras (headers) del mensaje para el enrutamient
 
 - **Caso de uso**: Enrutar mensajes basándose en metadatos como el tipo de contenido o el origen del mensaje.
 
+## Ejercicios Prácticos
+
+A continuación, se presentan ejercicios prácticos basados en los tutoriales oficiales de RabbitMQ para reforzar los conceptos.
+
+### 1. "Hello World": Tu Primer Mensaje
+
+Este ejercicio es la introducción más simple a RabbitMQ. Aprenderás a:
+- Enviar un único mensaje a una cola.
+- Recibir ese mensaje en un consumidor.
+
+Es el punto de partida para entender la dinámica básica de productor-consumidor.
+
+[Ver tutorial oficial](https://www.rabbitmq.com/tutorials/tutorial-one-python)
+
+### 2. Colas de Trabajo (Work Queues)
+
+Este ejercicio demuestra cómo distribuir tareas que consumen tiempo entre múltiples consumidores. Aprenderás a:
+- Enviar tareas a una única cola.
+- Hacer que varios consumidores compartan la carga de trabajo de esa cola.
+- Asegurar que los mensajes sean confirmados (acknowledged) después de ser procesados.
+
+[Ver tutorial oficial](https://www.rabbitmq.com/tutorials/tutorial-two-python)
+
+### 3. Publicar/Suscribir (Publish/Subscribe)
+
+En este ejercicio, aprenderás a enviar un mensaje a múltiples consumidores a la vez utilizando un exchange de tipo `fanout`.
+
+- Un productor envía un mensaje a un exchange.
+- El exchange distribuye el mensaje a todas las colas vinculadas a él.
+- Cada consumidor conectado a su propia cola recibe una copia del mensaje.
+
+[Ver tutorial oficial](https://www.rabbitmq.com/tutorials/tutorial-three-python)
+
 ## Cómo Ejecutar la Demostración
 
 ### Prerrequisitos
