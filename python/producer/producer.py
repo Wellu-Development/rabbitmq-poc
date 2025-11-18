@@ -30,7 +30,7 @@ def main():
 
     # Declare a durable queue. 'durable=True' ensures that the queue
     # survives a RabbitMQ broker restart. Messages will not be lost if the broker goes down.
-    channel.queue_declare(queue=queue_name, durable=True)
+    channel.queue_declare(queue=QUEUE_NAME, durable=True)
 
     # Construct the message payload.
     # The 'source' indicates where the message originated, and 'payload' contains
@@ -51,7 +51,7 @@ def main():
     #   meaning it will be written to disk and survive a broker restart.
     channel.basic_publish(
         exchange='',
-        routing_key=queue_name,
+        routing_key=QUEUE_NAME,
         body=body,
         properties=pika.BasicProperties(
             delivery_mode=2,  # make message persistent

@@ -12,7 +12,7 @@ load_dotenv()
 
 # Retrieve the queue name from environment variables. This is the queue
 # from which the consumer will receive messages.
-QUEUE_NAME = os.getenv('QUEUE_NAME')
+QUEUE_NAME =  os.getenv('QUEUE_NAME')
 
 # Retrieve RabbitMQ user and password from environment variables,
 # providing default values for development convenience.
@@ -32,7 +32,7 @@ def main():
     # Declare the queue to ensure it exists. This is important because the consumer
     # needs to be sure the queue it's trying to consume from is present.
     # 'durable=True' ensures the queue survives a broker restart.
-    channel.queue_declare(queue=queue_name, durable=True)
+    channel.queue_declare(queue=QUEUE_NAME, durable=True)
 
     print(' [*] Waiting for messages in \"%s\". To exit press CTRL+C' % QUEUE_NAME)
 
@@ -56,7 +56,7 @@ def main():
     
     # Set up the consumer to listen for messages on the specified queue and
     # execute the 'callback' function when a message arrives.
-    channel.basic_consume(queue=queue_name, on_message_callback=callback)
+    channel.basic_consume(queue=QUEUE_NAME, on_message_callback=callback)
 
     # Start consuming messages. This enters a blocking loop that waits for data,
     # runs callbacks, and handles network heartbeats.
