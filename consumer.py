@@ -10,7 +10,7 @@ load_dotenv()
 
 RABBITMQ_HOST = os.getenv("RABBITMQ_HOST")
 QUEUE_NAME = os.getenv("QUEUE_NAME", "odoo-events")
-BATCH_SIZE = int(os.getenv("BATCH_SIZE", 1))
+BATCH_SIZE = int(os.getenv("BATCH_SIZE", 20))
 
 ODOO_URL = os.getenv("ODOO_URL")
 ODOO_DB = os.getenv("ODOO_DATABASE")
@@ -79,63 +79,41 @@ def process_batch(batch, channel, uid, models):
 
         print(f" [x] Read {len(templates_info)} templates")
 
-        product_map = {}
+        i = 0
         for t in templates_info:
             variant_field = t.get("product_variant_id")
-            if variant_field:
-                p_id = variant_field[0]
-                product_map[t["default_code"]] = p_id
+            if not variant_field:
+                continue
 
-        print(f" [x] Found {len(product_map)} products")
+            p_id = variant_field[0]
 
-        location_ids = models.execute_kw(
-            ODOO_DB,
-            uid,
-            ODOO_PASS,
-            "stock.location",
-            "search",
-            [[["usage", "=", "internal"]]],
-            {"limit": 1},
-        )
+            print(f" [x] Processing product {p_id}... {t}")
 
-        print(f" [x] Found {len(location_ids)} internal locations")
-        if not location_ids:
-            raise Exception("No internal location found")
-
-        location_id = location_ids[0]
-
-        print(f" [x] Found {location_id} internal location")
-
-        quant_vals_list = []
-        for p_data in products_data:
-            code = p_data["default_code"]
-            qty = p_data["quantity"]
-            p_id = product_map.get(code)
-
-            if p_id:
-                quant_vals_list.append(
+            change_qty_id = models.execute_kw(
+                ODOO_DB,
+                uid,
+                ODOO_PASS,
+                "stock.change.product.qty",
+                "create",
+                [
                     {
                         "product_id": p_id,
-                        "location_id": location_id,
-                        "inventory_diff_quantity": qty,
+                        "product_tmpl_id": t["id"],
+                        "new_quantity": products_data[i]["quantity"],
                     }
-                )
-
-        print(f" [x] Found {len(quant_vals_list)} products to update")
-        if quant_vals_list:
-            quant_ids = models.execute_kw(
-                ODOO_DB, uid, ODOO_PASS, "stock.quant", "create", [quant_vals_list]
+                ],
             )
-            for quant_id in quant_ids:
-                models.execute_kw(
-                    ODOO_DB,
-                    uid,
-                    ODOO_PASS,
-                    "stock.quant",
-                    "action_apply_inventory",
-                    [quant_id],
-                )
-            print(f" [x] Updated {len(quant_ids)} products")
+
+            models.execute_kw(
+                ODOO_DB,
+                uid,
+                ODOO_PASS,
+                "stock.change.product.qty",
+                "change_product_qty",
+                [change_qty_id],
+            )
+
+            i += 1
 
         end_time = time.time()
         duration = end_time - start_time
