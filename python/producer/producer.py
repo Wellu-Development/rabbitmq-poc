@@ -2,6 +2,7 @@ import pika
 import json
 import sys
 import os
+import time
 from dotenv import load_dotenv
 
 # Load environment variables from .env file. This is crucial for configuring
@@ -13,17 +14,18 @@ load_dotenv()
 # for sending messages to RabbitMQ.
 QUEUE_NAME = os.getenv('QUEUE_NAME')
 
-# Retrieve RabbitMQ user and password from environment variables,
+# Retrieve RabbitMQ host, user and password from environment variables,
 # with default values for convenience during development.
+RABBITMQ_HOST = os.getenv('RABBITMQ_HOST', 'localhost')
 RABBITMQ_USER = os.getenv('RABBITMQ_DEFAULT_USER', 'user')
 RABBITMQ_PASS = os.getenv('RABBITMQ_DEFAULT_PASS', 'password')
 
 def main():
     # Establish a connection to the RabbitMQ server.
-    # It uses credentials for authentication and connects to 'localhost'.
+    # It uses credentials for authentication and connects to the configured host.
     credentials = pika.PlainCredentials(RABBITMQ_USER, RABBITMQ_PASS)
     connection = pika.BlockingConnection(
-        pika.ConnectionParameters(host='localhost', credentials=credentials))
+        pika.ConnectionParameters(host=RABBITMQ_HOST, credentials=credentials))
     
     # Create a channel, which is where most of the API for getting things done resides.
     channel = connection.channel()
@@ -35,9 +37,11 @@ def main():
     # Construct the message payload.
     # The 'source' indicates where the message originated, and 'payload' contains
     # the actual data, which can be provided via command-line arguments or a default string.
+    # A high-precision timestamp is added for performance measurement.
     message = {
         'source': 'Python Producer',
-        'payload': " ".join(sys.argv[1::]) or 'This is the the Python message.'
+        'payload': " ".join(sys.argv[1::]) or 'This is the the Python message.',
+        'ts_producer': time.time_ns()
     }
     # Convert the message dictionary to a JSON string, as RabbitMQ messages are typically
     # sent as strings or byte arrays.

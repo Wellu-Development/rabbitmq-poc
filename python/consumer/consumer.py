@@ -14,17 +14,18 @@ load_dotenv()
 # from which the consumer will receive messages.
 QUEUE_NAME =  os.getenv('QUEUE_NAME')
 
-# Retrieve RabbitMQ user and password from environment variables,
+# Retrieve RabbitMQ host, user and password from environment variables,
 # providing default values for development convenience.
+RABBITMQ_HOST = os.getenv('RABBITMQ_HOST', 'localhost')
 RABBITMQ_USER = os.getenv('RABBITMQ_DEFAULT_USER', 'user')
 RABBITMQ_PASS = os.getenv('RABBITMQ_DEFAULT_PASS', 'password')
 
 def main():
     # Establish a connection to the RabbitMQ server.
-    # It uses credentials for authentication and connects to 'localhost'.
+    # It uses credentials for authentication and connects to the configured host.
     credentials = pika.PlainCredentials(RABBITMQ_USER, RABBITMQ_PASS)
     connection = pika.BlockingConnection(
-        pika.ConnectionParameters(host='localhost', credentials=credentials))
+        pika.ConnectionParameters(host=RABBITMQ_HOST, credentials=credentials))
     
     # Create a channel, which is where most of the API for getting things done resides.
     channel = connection.channel()
@@ -38,12 +39,30 @@ def main():
 
     # Define the callback function that will be executed when a message is received.
     def callback(ch, method, properties, body):
-        # Decode and print the received message body.
-        print(f" [x] Received {json.loads(body)}")
-        # Simulate work being done by the consumer. This helps demonstrate
-        # message processing time and how acknowledgements work.
-        time.sleep(1)
+        ts_reception = time.time_ns()
+        
+        message = json.loads(body)
+        ts_producer = message.get('ts_producer', ts_reception)
+
+        print(f" [x] Received {message}")
+        
+        # Simulate work being done by the consumer (e.g., an Odoo API call).
+        ts_inicio_update = time.time_ns()
+        time.sleep(1) # This will be replaced by the actual Odoo API call.
+        ts_fin_update = time.time_ns()
+        
+        # --- Performance Measurement ---
+        # Calculate latencies in milliseconds
+        broker_latency_ms = (ts_reception - ts_producer) / 1_000_000
+        processing_latency_ms = (ts_fin_update - ts_inicio_update) / 1_000_000
+        end_to_end_latency_ms = (ts_fin_update - ts_producer) / 1_000_000
+
+        print(" [📊] Performance Metrics:")
+        print(f"    - Latencia Broker (Productor -> Consumidor): {broker_latency_ms:.2f} ms")
+        print(f"    - Tiempo Procesamiento (Llamada Odoo Sim): {processing_latency_ms:.2f} ms")
+        print(f"    - Latencia End-to-End: {end_to_end_latency_ms:.2f} ms")
         print(" [x] Done")
+        
         # Acknowledge the message. This tells RabbitMQ that the message has been
         # successfully processed and can be removed from the queue.
         ch.basic_ack(delivery_tag=method.delivery_tag)

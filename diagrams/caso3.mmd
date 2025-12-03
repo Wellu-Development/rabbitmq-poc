@@ -1,0 +1,15 @@
+---
+config:
+    theme: neutral
+    look: handDrawn
+    layout: dagre
+---
+graph TD
+    subgraph Logica_Interna_Consumidor
+        A[Recibe_Mensaje_1] --> C{Buffer_is_full?};
+        B[Recibe_Mensaje_2] --> C;
+        Z[Recibe_Mensaje_N] --> C;
+        C -- No --> D[Acumular_en_Buffer];
+        C -- Yes --> E[Realizar_llamada_API_en_Lote];
+        E --> F[Limpiar_Buffer];
+    end
