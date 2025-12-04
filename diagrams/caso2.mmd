@@ -1,0 +1,30 @@
+---
+config:
+    look: handDrawn
+    layout: dagre
+    theme: neutral
+---
+graph LR
+    subgraph On_Premise_SOINDI
+        Producer[Productor_Python]
+    end
+
+    subgraph CloudAMQP
+        Broker[RabbitMQ_Broker]
+    end
+
+    subgraph Servidor_Consumidor
+        Consumer[Consumidor_Python]
+    end
+
+    subgraph AWS_Cloud
+        subgraph Servidor_Odoo
+            Odoo[Odoo_17]
+            Database[(PostgreSQL)]
+            Odoo -- ORM --> Database
+        end
+        Consumer -- Latencia_Red_Interna_AWS --> Odoo
+    end
+
+    Producer -- WAN_VPN_Internet --> Broker
+    Broker -- Internet --> Consumer
