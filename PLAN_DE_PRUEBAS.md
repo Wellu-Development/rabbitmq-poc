@@ -7,7 +7,7 @@ Este documento detalla el plan de pruebas para medir y optimizar el rendimiento 
 La arquitectura de producción es un modelo híbrido que involucra tres zonas de red distintas. El rendimiento del sistema depende de la latencia en cada uno de los saltos entre estas zonas.
 
 - **On-Premise:** Ubicación del sistema de origen (SOINDI) y, por tanto, de los **productores** de mensajes.
-- **AWS Cloud (Broker):** Donde se hospeda el servicio de RabbitMQ.
+- **AWS Cloud o CloudAMQP(Broker):** Donde se hospeda el servicio de RabbitMQ.
 - **AWS Cloud (Aplicación):** Donde residen Odoo 17, su base de datos PostgreSQL y los **consumidores** de mensajes.
 
 El flujo de datos completo a medir es: `Productor (On-Premise) -> RabbitMQ (Cloud) -> Consumidor (Cloud) -> API de Odoo (Cloud) -> Base de Datos`.
